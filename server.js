@@ -178,7 +178,12 @@ app.get('/get-requests', async (req, res) => {
 // ========================================
 // Start Server
 // ========================================
+// app.listen(PORT, () => {
+//   console.log(`🚀 Server running on http://localhost:${PORT}`);
+//   console.log(`📁 Serving static files from 'public' folder`);
+// });
+
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-  console.log(`📁 Serving static files from 'public' folder`);
+  console.log(`✅ Server running on port ${PORT}`);
 });
