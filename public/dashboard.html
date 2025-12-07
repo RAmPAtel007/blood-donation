@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Blood Donation System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <h1 class="logo">🩸 Blood Bank</h1>
+            <ul class="nav-menu">
+                <li><a href="dashboard.html" class="active">Home</a></li>
+                <li><a href="#" onclick="showSection('register-donor')">Register Donor</a></li>
+                <li><a href="#" onclick="showSection('search-donor')">Search Donor</a></li>
+                <li><a href="#" onclick="showSection('request-blood')">Request Blood</a></li>
+                <li><a href="#" onclick="showSection('profile')">User Profile</a></li>
+                <li><a href="#" id="logoutBtn">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- User Welcome Section -->
+    <section class="welcome-banner">
+        <div class="container">
+            <h2>Welcome, <span id="userName">User</span>! 👋</h2>
+            <p>Manage your donations and requests from here</p>
+        </div>
+    </section>
+
+    <div class="container dashboard-container">
+        
+        <!-- HOME SECTION (Dashboard Overview) -->
+        <section id="homeSection" class="dashboard-section active">
+            <h2>📊 Dashboard Overview</h2>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-info">
+                        <h3 id="myDonorsCount">0</h3>
+                        <p>My Donors</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🩸</div>
+                    <div class="stat-info">
+                        <h3 id="myRequestsCount">0</h3>
+                        <p>My Requests</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-info">
+                        <h3>Active</h3>
+                        <p>Account Status</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="quick-actions">
+                <h3>Quick Actions</h3>
+                <div class="action-buttons">
+                    <button class="action-btn" onclick="showSection('register-donor')">
+                        <span class="action-icon">➕</span>
+                        Add Donor
+                    </button>
+                    <button class="action-btn" onclick="showSection('search-donor')">
+                        <span class="action-icon">🔍</span>
+                        Search Donors
+                    </button>
+                    <button class="action-btn" onclick="showSection('request-blood')">
+                        <span class="action-icon">🩸</span>
+                        Request Blood
+                    </button>
+                    <button class="action-btn" onclick="showSection('profile')">
+                        <span class="action-icon">👤</span>
+                        My Profile
+                    </button>
+                </div>
+            </div>
+
+            <div class="recent-section">
+                <h3>My Recent Donors</h3>
+                <div id="recentDonorsList" class="crud-list"></div>
+            </div>
+        </section>
+
+        <!-- REGISTER DONOR SECTION -->
+        <section id="registerDonorSection" class="dashboard-section">
+            <h2>➕ Register New Donor</h2>
+            <form id="donorForm" class="crud-form">
+                <input type="hidden" id="donorId">
+                
+                <div class="form-row-2">
+                    <div class="form-group-compact">
+                        <label for="donorName">Full Name *</label>
+                        <input type="text" id="donorName" required placeholder="Enter full name">
+                        <span class="error-msg" id="donorNameError"></span>
+                    </div>
+                    <div class="form-group-compact">
+                        <label for="donorAge">Age *</label>
+                        <input type="number" id="donorAge" required min="18" max="65" placeholder="18-65">
+                        <span class="error-msg" id="donorAgeError"></span>
+                    </div>
+                </div>
+
+                <div class="form-row-2">
+                    <div class="form-group-compact">
+                        <label for="donorGender">Gender *</label>
+                        <select id="donorGender" required>
+                            <option value="">Select Gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <span class="error-msg" id="donorGenderError"></span>
+                    </div>
+                    <div class="form-group-compact">
+                        <label for="donorBloodGroup">Blood Group *</label>
+                        <select id="donorBloodGroup" required>
+                            <option value="">Select Blood Group</option>
+                            <option value="A+">A+</option>
+                            <option value="A-">A-</option>
+                            <option value="B+">B+</option>
+                            <option value="B-">B-</option>
+                            <option value="AB+">AB+</option>
+                            <option value="AB-">AB-</option>
+                            <option value="O+">O+</option>
+                            <option value="O-">O-</option>
+                        </select>
+                        <span class="error-msg" id="donorBloodGroupError"></span>
+                    </div>
+                </div>
+
+                <div class="form-row-2">
+                    <div class="form-group-compact">
+                        <label for="donorCity">City *</label>
+                        <input type="text" id="donorCity" required placeholder="Enter city">
+                        <span class="error-msg" id="donorCityError"></span>
+                    </div>
+                    <div class="form-group-compact">
+                        <label for="donorPhone">Phone Number *</label>
+                        <input type="tel" id="donorPhone" required pattern="[0-9]{10}" placeholder="10-digit number">
+                        <span class="error-msg" id="donorPhoneError"></span>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <span id="donorBtnText">Register Donor</span>
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="resetDonorForm()">Cancel</button>
+                </div>
+            </form>
+            <div id="donorMessage" class="message"></div>
+
+            <h3>My Registered Donors</h3>
+            <div id="donorsList" class="crud-list"></div>
+        </section>
+
+        <!-- SEARCH DONOR SECTION -->
+        <section id="searchDonorSection" class="dashboard-section">
+            <h2>🔍 Search Blood Donors</h2>
+            
+            <div class="search-box-compact">
+                <div class="form-row-2">
+                    <div class="form-group-compact">
+                        <label for="searchBloodGroup">Blood Group</label>
+                        <select id="searchBloodGroup">
+                            <option value="">All Blood Groups</option>
+                            <option value="A+">A+</option>
+                            <option value="A-">A-</option>
+                            <option value="B+">B+</option>
+                            <option value="B-">B-</option>
+                            <option value="AB+">AB+</option>
+                            <option value="AB-">AB-</option>
+                            <option value="O+">O+</option>
+                            <option value="O-">O-</option>
+                        </select>
+                    </div>
+                    <div class="form-group-compact">
+                        <label for="searchCity">City</label>
+                        <input type="text" id="searchCity" placeholder="Enter city name">
+                    </div>
+                </div>
+                <button onclick="searchDonors()" class="btn btn-primary">Search</button>
+            </div>
+
+            <div id="searchResults">
+                <p class="results-count" id="resultsCount"></p>
+                <div id="searchDonorsList" class="crud-list"></div>
+            </div>
+        </section>
+
+        <!-- REQUEST BLOOD SECTION -->
+        <section id="requestBloodSection" class="dashboard-section">
+            <h2>🩸 Request Blood</h2>
+            
+            <form id="requestForm" class="crud-form">
+                <input type="hidden" id="requestId">
+                
+                <div class="form-row-2">
+                    <div class="form-group-compact">
+                        <label for="reqName">Patient/Requester Name *</label>
+                        <input type="text" id="reqName" required placeholder="Enter name">
+                        <span class="error-msg" id="reqNameError"></span>
+                    </div>
+                    <div class="form-group-compact">
+                        <label for="reqBloodGroup">Required Blood Group *</label>
+                        <select id="reqBloodGroup" required>
+                            <option value="">Select Blood Group</option>
+                            <option value="A+">A+</option>
+                            <option value="A-">A-</option>
+                            <option value="B+">B+</option>
+                            <option value="B-">B-</option>
+                            <option value="AB+">AB+</option>
+                            <option value="AB-">AB-</option>
+                            <option value="O+">O+</option>
+                            <option value="O-">O-</option>
+                        </select>
+                        <span class="error-msg" id="reqBloodGroupError"></span>
+                    </div>
+                </div>
+
+                <div class="form-row-2">
+                    <div class="form-group-compact">
+                        <label for="reqCity">City *</label>
+                        <input type="text" id="reqCity" required placeholder="Enter city">
+                        <span class="error-msg" id="reqCityError"></span>
+                    </div>
+                    <div class="form-group-compact">
+                        <label for="reqPhone">Contact Number *</label>
+                        <input type="tel" id="reqPhone" required pattern="[0-9]{10}" placeholder="10-digit number">
+                        <span class="error-msg" id="reqPhoneError"></span>
+                    </div>
+                </div>
+
+                <div class="form-group-compact">
+                    <label for="reqReason">Reason for Requirement *</label>
+                    <textarea id="reqReason" required rows="2" placeholder="Brief description"></textarea>
+                    <span class="error-msg" id="reqReasonError"></span>
+                </div>
+
+                <div class="form-group-compact">
+                    <label for="reqStatus">Status</label>
+                    <select id="reqStatus">
+                        <option value="Pending">Pending</option>
+                        <option value="Fulfilled">Fulfilled</option>
+                        <option value="Cancelled">Cancelled</option>
+                    </select>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <span id="requestBtnText">Submit Request</span>
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="resetRequestForm()">Cancel</button>
+                </div>
+            </form>
+            <div id="requestMessage" class="message"></div>
+
+            <h3>My Blood Requests</h3>
+            <div id="requestsList" class="crud-list"></div>
+        </section>
+
+        <!-- USER PROFILE SECTION (NEW) -->
+        <section id="profileSection" class="dashboard-section">
+            <h2>👤 User Profile</h2>
+            
+            <div class="profile-card">
+                <div class="profile-header">
+                    <div class="profile-avatar">
+                        <span id="profileInitials">U</span>
+                    </div>
+                    <div class="profile-info">
+                        <h3 id="profileFullName">Loading...</h3>
+                        <p id="profileEmail">Loading...</p>
+                    </div>
+                </div>
+
+                <form id="profileForm" class="crud-form">
+                    <h3>Edit Profile</h3>
+                    
+                    <div class="form-row-2">
+                        <div class="form-group-compact">
+                            <label for="profileUsername">Username</label>
+                            <input type="text" id="profileUsername" readonly>
+                        </div>
+                        <div class="form-group-compact">
+                            <label for="profileFullNameEdit">Full Name *</label>
+                            <input type="text" id="profileFullNameEdit" required>
+                            <span class="error-msg" id="profileFullNameError"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-row-2">
+                        <div class="form-group-compact">
+                            <label for="profileEmailEdit">Email *</label>
+                            <input type="email" id="profileEmailEdit" required>
+                            <span class="error-msg" id="profileEmailError"></span>
+                        </div>
+                        <div class="form-group-compact">
+                            <label for="profilePhoneEdit">Phone *</label>
+                            <input type="tel" id="profilePhoneEdit" required pattern="[0-9]{10}">
+                            <span class="error-msg" id="profilePhoneError"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Update Profile</button>
+                        <button type="button" class="btn btn-secondary" onclick="loadProfile()">Cancel</button>
+                    </div>
+                </form>
+                <div id="profileMessage" class="message"></div>
+
+                <div class="profile-stats">
+                    <h3>My Activity</h3>
+                    <div class="stats-row">
+                        <div class="stat-item">
+                            <span class="stat-label">Donors Registered:</span>
+                            <span class="stat-value" id="profileDonorCount">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Requests Made:</span>
+                            <span class="stat-value" id="profileRequestCount">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Member Since:</span>
+                            <span class="stat-value" id="profileMemberSince">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2024 Blood Donation Management System. All rights reserved.</p>
+    </footer>
+
+    <script src="dashboard-script.js"></script>
+</body>
+</html>

@@ -7,75 +7,67 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Navigation Bar -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <h1 class="logo">🩸 Blood Donation System</h1>
-            <ul class="nav-menu">
-                <li><a href="index.html" class="active">Home</a></li>
-                <li><a href="register.html">Register Donor</a></li>
-                <li><a href="search.html">Search Donors</a></li>
-                <li><a href="request.html">Request Blood</a></li>
-                <li><a href="about.html">About</a></li>
-            </ul>
-        </div>
-    </nav>
+    <!-- Hero Section with Login/Register -->
+    <section class="landing-hero">
+        <div class="hero-overlay">
+            <div class="hero-content">
+                <div class="hero-logo">🩸</div>
+                <h1>Blood Donation Management System</h1>
+                <p class="hero-subtitle">Save Lives. Donate Blood. Be a Hero.</p>
+                <p class="hero-description">Connect with donors and recipients instantly. Every drop counts.</p>
+                
+                <div class="hero-actions">
+                    <a href="login.html" class="btn btn-hero btn-primary">
+                        🔐 Login
+                    </a>
+                    <a href="user-register.html" class="btn btn-hero btn-secondary">
+                        📝 Create Account
+                    </a>
+                </div>
 
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="hero-content">
-            <h1>Donate Blood, Save Lives</h1>
-            <p>Every drop counts. Join our community of life-savers today.</p>
-            <div class="hero-buttons">
-                <a href="register.html" class="btn btn-primary">Become a Donor</a>
-                <a href="search.html" class="btn btn-secondary">Find Donors</a>
+                <div class="hero-stats">
+                    <div class="stat-box">
+                        <span class="stat-number" id="totalDonors">0</span>
+                        <span class="stat-label">Registered Donors</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-number" id="totalRequests">0</span>
+                        <span class="stat-label">Active Requests</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-number">24/7</span>
+                        <span class="stat-label">Available</span>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
     <!-- Features Section -->
-    <section class="features">
+    <section class="features-section">
         <div class="container">
-            <h2>Why Donate Blood?</h2>
-            <div class="feature-grid">
-                <div class="feature-card">
-                    <div class="icon">❤️</div>
+            <h2>Why Choose Us?</h2>
+            <div class="features-grid">
+                <div class="feature-box">
+                    <div class="feature-icon">❤️</div>
                     <h3>Save Lives</h3>
-                    <p>One donation can save up to 3 lives</p>
+                    <p>One donation can save up to three lives</p>
                 </div>
-                <div class="feature-card">
-                    <div class="icon">🏥</div>
-                    <h3>Help Patients</h3>
-                    <p>Support accident victims and surgery patients</p>
+                <div class="feature-box">
+                    <div class="feature-icon">🔍</div>
+                    <h3>Quick Search</h3>
+                    <p>Find donors instantly by blood group and location</p>
                 </div>
-                <div class="feature-card">
-                    <div class="icon">🎯</div>
-                    <h3>Easy Process</h3>
-                    <p>Simple registration and quick donation</p>
+                <div class="feature-box">
+                    <div class="feature-icon">🔐</div>
+                    <h3>Secure Platform</h3>
+                    <p>Your data is safe with encrypted authentication</p>
                 </div>
-                <div class="feature-card">
-                    <div class="icon">🤝</div>
-                    <h3>Community</h3>
-                    <p>Join thousands of generous donors</p>
+                <div class="feature-box">
+                    <div class="feature-icon">📱</div>
+                    <h3>Easy Management</h3>
+                    <p>Manage donors and requests from one dashboard</p>
                 </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Stats Section -->
-    <section class="stats">
-        <div class="container">
-            <div class="stat-item">
-                <h3 id="donorCount">0</h3>
-                <p>Registered Donors</p>
-            </div>
-            <div class="stat-item">
-                <h3 id="requestCount">0</h3>
-                <p>Blood Requests</p>
-            </div>
-            <div class="stat-item">
-                <h3>24/7</h3>
-                <p>Available Service</p>
             </div>
         </div>
     </section>
@@ -86,20 +78,32 @@
     </footer>
 
     <script>
-        // Fetch and display statistics on page load
+        // Load statistics
         window.addEventListener('DOMContentLoaded', async () => {
             try {
-                // Get donor count
                 const donorResponse = await fetch('http://localhost:3000/search-donors');
                 const donorData = await donorResponse.json();
-                document.getElementById('donorCount').textContent = donorData.count || 0;
+                document.getElementById('totalDonors').textContent = donorData.count || 0;
 
-                // Get request count
                 const requestResponse = await fetch('http://localhost:3000/get-requests');
                 const requestData = await requestResponse.json();
-                document.getElementById('requestCount').textContent = requestData.count || 0;
+                document.getElementById('totalRequests').textContent = requestData.count || 0;
             } catch (error) {
                 console.error('Error loading stats:', error);
+            }
+
+            // Check if already logged in
+            try {
+                const response = await fetch('http://localhost:3000/api/auth/check', {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                
+                if (data.authenticated) {
+                    window.location.href = 'dashboard.html';
+                }
+            } catch (error) {
+                console.error('Auth check error:', error);
             }
         });
     </script>

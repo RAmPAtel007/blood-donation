@@ -1,48 +1,503 @@
-// Main Express Server
-// This file contains all REST API endpoints
+// // Main Express Server
+// // This file contains all REST API endpoints
+
+// const express = require('express');
+// const cors = require('cors');
+// const bodyParser = require('body-parser');
+// const db = require('./db'); // Import database connection
+
+// const app = express();
+// const PORT = 3000;
+
+// // Middleware Setup
+// app.use(cors());                          // Enable CORS for frontend requests
+// app.use(bodyParser.json());               // Parse JSON request bodies
+// app.use(bodyParser.urlencoded({ extended: true })); // Parse URL-encoded data
+// app.use(express.static('public'));        // Serve static files from public folder
+
+// // ========================================
+// // API ENDPOINT 1: Register New Donor
+// // POST /register-donor
+// // Purpose: Add new donor to database
+// // ========================================
+// app.post('/register-donor', async (req, res) => {
+//   try {
+//     // Extract donor details from request body
+//     const { name, age, gender, blood_group, city, phone } = req.body;
+
+//     // Validation: Check if all fields are provided
+//     if (!name || !age || !gender || !blood_group || !city || !phone) {
+//       return res.status(400).json({ 
+//         success: false, 
+//         message: 'All fields are required' 
+//       });
+//     }
+
+//     // SQL query to insert donor into database
+//     const query = `
+//       INSERT INTO donors (name, age, gender, blood_group, city, phone) 
+//       VALUES (?, ?, ?, ?, ?, ?)
+//     `;
+
+//     // Execute query with parameterized values (prevents SQL injection)
+//     const [result] = await db.execute(query, [name, age, gender, blood_group, city, phone]);
+
+//     // Send success response
+//     res.status(201).json({ 
+//       success: true, 
+//       message: 'Donor registered successfully!',
+//       donor_id: result.insertId 
+//     });
+
+//   } catch (error) {
+//     console.error('Error registering donor:', error);
+//     res.status(500).json({ 
+//       success: false, 
+//       message: 'Server error. Please try again.' 
+//     });
+//   }
+// });
+
+// // ========================================
+// // API ENDPOINT 2: Search Donors
+// // GET /search-donors
+// // Purpose: Find donors by blood group and city
+// // ========================================
+// app.get('/search-donors', async (req, res) => {
+//   try {
+//     // Get search parameters from query string
+//     const { blood_group, city } = req.query;
+
+//     // Build dynamic SQL query based on provided filters
+//     let query = 'SELECT * FROM donors WHERE 1=1';
+//     const params = [];
+
+//     // Add blood group filter if provided
+//     if (blood_group) {
+//       query += ' AND blood_group = ?';
+//       params.push(blood_group);
+//     }
+
+//     // Add city filter if provided
+//     if (city) {
+//       query += ' AND city LIKE ?';
+//       params.push(`%${city}%`); // Use LIKE for partial matching
+//     }
+
+//     // Execute search query
+//     const [donors] = await db.execute(query, params);
+
+//     // Send results
+//     res.status(200).json({ 
+//       success: true, 
+//       count: donors.length,
+//       donors: donors 
+//     });
+
+//   } catch (error) {
+//     console.error('Error searching donors:', error);
+//     res.status(500).json({ 
+//       success: false, 
+//       message: 'Server error. Please try again.' 
+//     });
+//   }
+// });
+
+// // ========================================
+// // API ENDPOINT 3: Request Blood
+// // POST /request-blood
+// // Purpose: Submit new blood request
+// // ========================================
+// app.post('/request-blood', async (req, res) => {
+//   try {
+//     // Extract request details from body
+//     const { name, blood_group, city, reason, phone } = req.body;
+
+//     // Validation
+//     if (!name || !blood_group || !city || !reason || !phone) {
+//       return res.status(400).json({ 
+//         success: false, 
+//         message: 'All fields are required' 
+//       });
+//     }
+
+//     // SQL query to insert blood request
+//     const query = `
+//       INSERT INTO blood_requests (name, blood_group, city, reason, phone) 
+//       VALUES (?, ?, ?, ?, ?)
+//     `;
+
+//     // Execute insertion
+//     const [result] = await db.execute(query, [name, blood_group, city, reason, phone]);
+
+//     // Send success response
+//     res.status(201).json({ 
+//       success: true, 
+//       message: 'Blood request submitted successfully!',
+//       request_id: result.insertId 
+//     });
+
+//   } catch (error) {
+//     console.error('Error submitting request:', error);
+//     res.status(500).json({ 
+//       success: false, 
+//       message: 'Server error. Please try again.' 
+//     });
+//   }
+// });
+
+// // ========================================
+// // API ENDPOINT 4: Get All Blood Requests
+// // GET /get-requests
+// // Purpose: Retrieve all blood requests
+// // ========================================
+// app.get('/get-requests', async (req, res) => {
+//   try {
+//     // Query to get all requests, ordered by most recent first
+//     const query = 'SELECT * FROM blood_requests ORDER BY req_id DESC';
+
+//     // Execute query
+//     const [requests] = await db.execute(query);
+
+//     // Send results
+//     res.status(200).json({ 
+//       success: true, 
+//       count: requests.length,
+//       requests: requests 
+//     });
+
+//   } catch (error) {
+//     console.error('Error fetching requests:', error);
+//     res.status(500).json({ 
+//       success: false, 
+//       message: 'Server error. Please try again.' 
+//     });
+//   }
+// });
+
+// // ========================================
+// // Start Server
+// // ========================================
+// // app.listen(PORT, () => {
+// //   console.log(`🚀 Server running on http://localhost:${PORT}`);
+// //   console.log(`📁 Serving static files from 'public' folder`);
+// // });
+
+// const PORT = process.env.PORT || 3000;
+// app.listen(PORT, () => {
+//   console.log(`✅ Server running on port ${PORT}`);
+// });
+
+
+// Main Express Server with Authentication & CRUD
+// This file contains user authentication and full CRUD operations
 
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const db = require('./db'); // Import database connection
+const session = require('express-session');
+const bcrypt = require('bcryptjs');
+const { body, validationResult } = require('express-validator');
+const db = require('./db');
 
 const app = express();
 const PORT = 3000;
 
+// ========================================
 // Middleware Setup
-app.use(cors());                          // Enable CORS for frontend requests
-app.use(bodyParser.json());               // Parse JSON request bodies
-app.use(bodyParser.urlencoded({ extended: true })); // Parse URL-encoded data
-app.use(express.static('public'));        // Serve static files from public folder
+// ========================================
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true
+}));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.static('public'));
+
+// Session Configuration
+app.use(session({
+  secret: 'blood-donation-secret-key-2024',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { 
+    secure: false, // Set to true if using HTTPS
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
+}));
 
 // ========================================
-// API ENDPOINT 1: Register New Donor
-// POST /register-donor
-// Purpose: Add new donor to database
+// Authentication Middleware
 // ========================================
-app.post('/register-donor', async (req, res) => {
+const isAuthenticated = (req, res, next) => {
+  if (req.session && req.session.userId) {
+    return next();
+  }
+  res.status(401).json({ 
+    success: false, 
+    message: 'Please login to access this resource' 
+  });
+};
+
+// ========================================
+// VALIDATION RULES
+// ========================================
+
+// User Registration Validation
+const userRegisterValidation = [
+  body('username')
+    .trim()
+    .isLength({ min: 3, max: 50 }).withMessage('Username must be 3-50 characters')
+    .matches(/^[a-zA-Z0-9_]+$/).withMessage('Username can only contain letters, numbers, and underscores'),
+  body('email')
+    .trim()
+    .isEmail().withMessage('Invalid email address')
+    .normalizeEmail(),
+  body('password')
+    .isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/).withMessage('Password must contain uppercase, lowercase, and number'),
+  body('full_name')
+    .trim()
+    .isLength({ min: 2, max: 100 }).withMessage('Full name must be 2-100 characters')
+    .matches(/^[a-zA-Z\s]+$/).withMessage('Name can only contain letters and spaces'),
+  body('phone')
+    .trim()
+    .matches(/^[0-9]{10}$/).withMessage('Phone must be exactly 10 digits')
+];
+
+// Donor Validation
+const donorValidation = [
+  body('name')
+    .trim()
+    .isLength({ min: 2, max: 50 }).withMessage('Name must be 2-50 characters')
+    .matches(/^[a-zA-Z\s]+$/).withMessage('Name can only contain letters'),
+  body('age')
+    .isInt({ min: 18, max: 65 }).withMessage('Age must be between 18 and 65'),
+  body('gender')
+    .isIn(['Male', 'Female', 'Other']).withMessage('Invalid gender'),
+  body('blood_group')
+    .isIn(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']).withMessage('Invalid blood group'),
+  body('city')
+    .trim()
+    .isLength({ min: 2, max: 30 }).withMessage('City must be 2-30 characters'),
+  body('phone')
+    .trim()
+    .matches(/^[0-9]{10}$/).withMessage('Phone must be exactly 10 digits')
+];
+
+// Blood Request Validation
+const requestValidation = [
+  body('name')
+    .trim()
+    .isLength({ min: 2, max: 50 }).withMessage('Name must be 2-50 characters'),
+  body('blood_group')
+    .isIn(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']).withMessage('Invalid blood group'),
+  body('city')
+    .trim()
+    .isLength({ min: 2, max: 30 }).withMessage('City must be 2-30 characters'),
+  body('reason')
+    .trim()
+    .isLength({ min: 5, max: 100 }).withMessage('Reason must be 5-100 characters'),
+  body('phone')
+    .trim()
+    .matches(/^[0-9]{10}$/).withMessage('Phone must be exactly 10 digits')
+];
+
+// ========================================
+// AUTHENTICATION ENDPOINTS
+// ========================================
+
+// User Registration
+app.post('/api/auth/register', userRegisterValidation, async (req, res) => {
   try {
-    // Extract donor details from request body
-    const { name, age, gender, blood_group, city, phone } = req.body;
-
-    // Validation: Check if all fields are provided
-    if (!name || !age || !gender || !blood_group || !city || !phone) {
+    // Check validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
       return res.status(400).json({ 
         success: false, 
-        message: 'All fields are required' 
+        message: 'Validation failed',
+        errors: errors.array() 
       });
     }
 
-    // SQL query to insert donor into database
+    const { username, email, password, full_name, phone } = req.body;
+
+    // Check if user already exists
+    const [existingUsers] = await db.execute(
+      'SELECT user_id FROM users WHERE email = ? OR username = ?',
+      [email, username]
+    );
+
+    if (existingUsers.length > 0) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Username or email already exists' 
+      });
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Insert new user
     const query = `
-      INSERT INTO donors (name, age, gender, blood_group, city, phone) 
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO users (username, email, password, full_name, phone) 
+      VALUES (?, ?, ?, ?, ?)
+    `;
+    
+    const [result] = await db.execute(query, 
+      [username, email, hashedPassword, full_name, phone]);
+
+    res.status(201).json({ 
+      success: true, 
+      message: 'Registration successful! Please login.',
+      user_id: result.insertId 
+    });
+
+  } catch (error) {
+    console.error('Registration error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Registration failed. Please try again.' 
+    });
+  }
+});
+
+// User Login
+app.post('/api/auth/login', [
+  body('email').trim().isEmail().withMessage('Invalid email'),
+  body('password').notEmpty().withMessage('Password is required')
+], async (req, res) => {
+  try {
+    // Check validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Validation failed',
+        errors: errors.array() 
+      });
+    }
+
+    const { email, password } = req.body;
+
+    // Find user
+    const [users] = await db.execute(
+      'SELECT user_id, username, email, password, full_name FROM users WHERE email = ?',
+      [email]
+    );
+
+    if (users.length === 0) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Invalid email or password' 
+      });
+    }
+
+    const user = users[0];
+
+    // Verify password
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    
+    if (!isValidPassword) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Invalid email or password' 
+      });
+    }
+
+    // Update last login
+    await db.execute(
+      'UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE user_id = ?',
+      [user.user_id]
+    );
+
+    // Create session
+    req.session.userId = user.user_id;
+    req.session.username = user.username;
+    req.session.email = user.email;
+
+    res.json({ 
+      success: true, 
+      message: 'Login successful!',
+      user: {
+        user_id: user.user_id,
+        username: user.username,
+        email: user.email,
+        full_name: user.full_name
+      }
+    });
+
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Login failed. Please try again.' 
+    });
+  }
+});
+
+// User Logout
+app.post('/api/auth/logout', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Logout failed' 
+      });
+    }
+    res.json({ 
+      success: true, 
+      message: 'Logged out successfully' 
+    });
+  });
+});
+
+// Check Auth Status
+app.get('/api/auth/check', (req, res) => {
+  if (req.session && req.session.userId) {
+    res.json({ 
+      success: true, 
+      authenticated: true,
+      user: {
+        user_id: req.session.userId,
+        username: req.session.username,
+        email: req.session.email
+      }
+    });
+  } else {
+    res.json({ 
+      success: true, 
+      authenticated: false 
+    });
+  }
+});
+
+// ========================================
+// DONOR CRUD OPERATIONS (PROTECTED)
+// ========================================
+
+// CREATE - Register Donor (Protected)
+app.post('/api/donors', isAuthenticated, donorValidation, async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Validation failed',
+        errors: errors.array() 
+      });
+    }
+
+    const { name, age, gender, blood_group, city, phone } = req.body;
+    const userId = req.session.userId;
+
+    const query = `
+      INSERT INTO donors (user_id, name, age, gender, blood_group, city, phone) 
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `;
 
-    // Execute query with parameterized values (prevents SQL injection)
-    const [result] = await db.execute(query, [name, age, gender, blood_group, city, phone]);
+    const [result] = await db.execute(query, 
+      [userId, name, age, gender, blood_group, city, phone]);
 
-    // Send success response
     res.status(201).json({ 
       success: true, 
       message: 'Donor registered successfully!',
@@ -58,44 +513,134 @@ app.post('/register-donor', async (req, res) => {
   }
 });
 
-// ========================================
-// API ENDPOINT 2: Search Donors
-// GET /search-donors
-// Purpose: Find donors by blood group and city
-// ========================================
-app.get('/search-donors', async (req, res) => {
+// READ - Get All Donors by Current User (Protected)
+app.get('/api/donors/my', isAuthenticated, async (req, res) => {
   try {
-    // Get search parameters from query string
-    const { blood_group, city } = req.query;
+    const userId = req.session.userId;
 
-    // Build dynamic SQL query based on provided filters
-    let query = 'SELECT * FROM donors WHERE 1=1';
-    const params = [];
+    const query = 'SELECT * FROM donors WHERE user_id = ? ORDER BY created_at DESC';
+    const [donors] = await db.execute(query, [userId]);
 
-    // Add blood group filter if provided
-    if (blood_group) {
-      query += ' AND blood_group = ?';
-      params.push(blood_group);
-    }
-
-    // Add city filter if provided
-    if (city) {
-      query += ' AND city LIKE ?';
-      params.push(`%${city}%`); // Use LIKE for partial matching
-    }
-
-    // Execute search query
-    const [donors] = await db.execute(query, params);
-
-    // Send results
-    res.status(200).json({ 
+    res.json({ 
       success: true, 
       count: donors.length,
       donors: donors 
     });
 
   } catch (error) {
-    console.error('Error searching donors:', error);
+    console.error('Error fetching donors:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error. Please try again.' 
+    });
+  }
+});
+
+// READ - Get Single Donor (Protected)
+app.get('/api/donors/:id', isAuthenticated, async (req, res) => {
+  try {
+    const donorId = req.params.id;
+    const userId = req.session.userId;
+
+    const query = 'SELECT * FROM donors WHERE donor_id = ? AND user_id = ?';
+    const [donors] = await db.execute(query, [donorId, userId]);
+
+    if (donors.length === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Donor not found' 
+      });
+    }
+
+    res.json({ 
+      success: true, 
+      donor: donors[0] 
+    });
+
+  } catch (error) {
+    console.error('Error fetching donor:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error. Please try again.' 
+    });
+  }
+});
+
+// UPDATE - Update Donor (Protected)
+app.put('/api/donors/:id', isAuthenticated, donorValidation, async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Validation failed',
+        errors: errors.array() 
+      });
+    }
+
+    const donorId = req.params.id;
+    const userId = req.session.userId;
+    const { name, age, gender, blood_group, city, phone } = req.body;
+
+    // Check if donor belongs to user
+    const [existing] = await db.execute(
+      'SELECT donor_id FROM donors WHERE donor_id = ? AND user_id = ?',
+      [donorId, userId]
+    );
+
+    if (existing.length === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Donor not found or unauthorized' 
+      });
+    }
+
+    const query = `
+      UPDATE donors 
+      SET name = ?, age = ?, gender = ?, blood_group = ?, city = ?, phone = ?
+      WHERE donor_id = ? AND user_id = ?
+    `;
+
+    await db.execute(query, 
+      [name, age, gender, blood_group, city, phone, donorId, userId]);
+
+    res.json({ 
+      success: true, 
+      message: 'Donor updated successfully!' 
+    });
+
+  } catch (error) {
+    console.error('Error updating donor:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error. Please try again.' 
+    });
+  }
+});
+
+// DELETE - Delete Donor (Protected)
+app.delete('/api/donors/:id', isAuthenticated, async (req, res) => {
+  try {
+    const donorId = req.params.id;
+    const userId = req.session.userId;
+
+    const query = 'DELETE FROM donors WHERE donor_id = ? AND user_id = ?';
+    const [result] = await db.execute(query, [donorId, userId]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Donor not found or unauthorized' 
+      });
+    }
+
+    res.json({ 
+      success: true, 
+      message: 'Donor deleted successfully!' 
+    });
+
+  } catch (error) {
+    console.error('Error deleting donor:', error);
     res.status(500).json({ 
       success: false, 
       message: 'Server error. Please try again.' 
@@ -104,33 +649,32 @@ app.get('/search-donors', async (req, res) => {
 });
 
 // ========================================
-// API ENDPOINT 3: Request Blood
-// POST /request-blood
-// Purpose: Submit new blood request
+// BLOOD REQUEST CRUD OPERATIONS (PROTECTED)
 // ========================================
-app.post('/request-blood', async (req, res) => {
-  try {
-    // Extract request details from body
-    const { name, blood_group, city, reason, phone } = req.body;
 
-    // Validation
-    if (!name || !blood_group || !city || !reason || !phone) {
+// CREATE - Submit Blood Request (Protected)
+app.post('/api/requests', isAuthenticated, requestValidation, async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
       return res.status(400).json({ 
         success: false, 
-        message: 'All fields are required' 
+        message: 'Validation failed',
+        errors: errors.array() 
       });
     }
 
-    // SQL query to insert blood request
+    const { name, blood_group, city, reason, phone } = req.body;
+    const userId = req.session.userId;
+
     const query = `
-      INSERT INTO blood_requests (name, blood_group, city, reason, phone) 
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO blood_requests (user_id, name, blood_group, city, reason, phone) 
+      VALUES (?, ?, ?, ?, ?, ?)
     `;
 
-    // Execute insertion
-    const [result] = await db.execute(query, [name, blood_group, city, reason, phone]);
+    const [result] = await db.execute(query, 
+      [userId, name, blood_group, city, reason, phone]);
 
-    // Send success response
     res.status(201).json({ 
       success: true, 
       message: 'Blood request submitted successfully!',
@@ -146,21 +690,15 @@ app.post('/request-blood', async (req, res) => {
   }
 });
 
-// ========================================
-// API ENDPOINT 4: Get All Blood Requests
-// GET /get-requests
-// Purpose: Retrieve all blood requests
-// ========================================
-app.get('/get-requests', async (req, res) => {
+// READ - Get All Requests by Current User (Protected)
+app.get('/api/requests/my', isAuthenticated, async (req, res) => {
   try {
-    // Query to get all requests, ordered by most recent first
-    const query = 'SELECT * FROM blood_requests ORDER BY req_id DESC';
+    const userId = req.session.userId;
 
-    // Execute query
-    const [requests] = await db.execute(query);
+    const query = 'SELECT * FROM blood_requests WHERE user_id = ? ORDER BY created_at DESC';
+    const [requests] = await db.execute(query, [userId]);
 
-    // Send results
-    res.status(200).json({ 
+    res.json({ 
       success: true, 
       count: requests.length,
       requests: requests 
@@ -175,15 +713,302 @@ app.get('/get-requests', async (req, res) => {
   }
 });
 
+// READ - Get Single Request (Protected)
+app.get('/api/requests/:id', isAuthenticated, async (req, res) => {
+  try {
+    const requestId = req.params.id;
+    const userId = req.session.userId;
+
+    const query = 'SELECT * FROM blood_requests WHERE req_id = ? AND user_id = ?';
+    const [requests] = await db.execute(query, [requestId, userId]);
+
+    if (requests.length === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Request not found' 
+      });
+    }
+
+    res.json({ 
+      success: true, 
+      request: requests[0] 
+    });
+
+  } catch (error) {
+    console.error('Error fetching request:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error. Please try again.' 
+    });
+  }
+});
+
+// UPDATE - Update Blood Request (Protected)
+app.put('/api/requests/:id', isAuthenticated, requestValidation, async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Validation failed',
+        errors: errors.array() 
+      });
+    }
+
+    const requestId = req.params.id;
+    const userId = req.session.userId;
+    const { name, blood_group, city, reason, phone, status } = req.body;
+
+    // Check if request belongs to user
+    const [existing] = await db.execute(
+      'SELECT req_id FROM blood_requests WHERE req_id = ? AND user_id = ?',
+      [requestId, userId]
+    );
+
+    if (existing.length === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Request not found or unauthorized' 
+      });
+    }
+
+    const query = `
+      UPDATE blood_requests 
+      SET name = ?, blood_group = ?, city = ?, reason = ?, phone = ?, status = ?
+      WHERE req_id = ? AND user_id = ?
+    `;
+
+    await db.execute(query, 
+      [name, blood_group, city, reason, phone, status || 'Pending', requestId, userId]);
+
+    res.json({ 
+      success: true, 
+      message: 'Request updated successfully!' 
+    });
+
+  } catch (error) {
+    console.error('Error updating request:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error. Please try again.' 
+    });
+  }
+});
+
+// DELETE - Delete Blood Request (Protected)
+app.delete('/api/requests/:id', isAuthenticated, async (req, res) => {
+  try {
+    const requestId = req.params.id;
+    const userId = req.session.userId;
+
+    const query = 'DELETE FROM blood_requests WHERE req_id = ? AND user_id = ?';
+    const [result] = await db.execute(query, [requestId, userId]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Request not found or unauthorized' 
+      });
+    }
+
+    res.json({ 
+      success: true, 
+      message: 'Request deleted successfully!' 
+    });
+
+  } catch (error) {
+    console.error('Error deleting request:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error. Please try again.' 
+    });
+  }
+});
+
+// ========================================
+// PUBLIC ENDPOINTS (No Authentication Required)
+// ========================================
+
+// Search Donors (Public - Read Only)
+app.get('/search-donors', async (req, res) => {
+  try {
+    const { blood_group, city } = req.query;
+
+    let query = 'SELECT * FROM donors WHERE 1=1';
+    const params = [];
+
+    if (blood_group) {
+      query += ' AND blood_group = ?';
+      params.push(blood_group);
+    }
+
+    if (city) {
+      query += ' AND city LIKE ?';
+      params.push(`%${city}%`);
+    }
+
+    const [donors] = await db.execute(query, params);
+
+    res.json({ 
+      success: true, 
+      count: donors.length,
+      donors: donors 
+    });
+
+  } catch (error) {
+    console.error('Error searching donors:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error. Please try again.' 
+    });
+  }
+});
+
+// Get All Public Requests (Public - Read Only)
+app.get('/get-requests', async (req, res) => {
+  try {
+    const query = 'SELECT * FROM blood_requests ORDER BY created_at DESC LIMIT 10';
+    const [requests] = await db.execute(query);
+
+    res.json({ 
+      success: true, 
+      count: requests.length,
+      requests: requests 
+    });
+
+  } catch (error) {
+    console.error('Error fetching requests:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error. Please try again.' 
+    });
+  }
+});
+
+
+// ========================================
+// USER PROFILE ENDPOINTS (ADD THESE)
+// ========================================
+
+// Get user profile
+app.get('/api/profile', isAuthenticated, async (req, res) => {
+  try {
+    const userId = req.session.userId;
+
+    // Get user details
+    const [users] = await db.execute(
+      'SELECT user_id, username, email, full_name, phone, created_at FROM users WHERE user_id = ?',
+      [userId]
+    );
+
+    if (users.length === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'User not found' 
+      });
+    }
+
+    // Get user stats
+    const [donorCount] = await db.execute(
+      'SELECT COUNT(*) as count FROM donors WHERE user_id = ?',
+      [userId]
+    );
+
+    const [requestCount] = await db.execute(
+      'SELECT COUNT(*) as count FROM blood_requests WHERE user_id = ?',
+      [userId]
+    );
+
+    res.json({ 
+      success: true, 
+      user: users[0],
+      stats: {
+        donors: donorCount[0].count,
+        requests: requestCount[0].count
+      }
+    });
+
+  } catch (error) {
+    console.error('Error fetching profile:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error' 
+    });
+  }
+});
+
+// Update user profile
+app.put('/api/profile', isAuthenticated, [
+  body('full_name')
+    .trim()
+    .isLength({ min: 2, max: 100 }).withMessage('Full name must be 2-100 characters')
+    .matches(/^[a-zA-Z\s]+$/).withMessage('Name can only contain letters'),
+  body('email')
+    .trim()
+    .isEmail().withMessage('Invalid email address')
+    .normalizeEmail(),
+  body('phone')
+    .trim()
+    .matches(/^[0-9]{10}$/).withMessage('Phone must be exactly 10 digits')
+], async (req, res) => {
+  try {
+    // Check validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Validation failed',
+        errors: errors.array() 
+      });
+    }
+
+    const userId = req.session.userId;
+    const { full_name, email, phone } = req.body;
+
+    // Check if email is already taken by another user
+    const [existingUsers] = await db.execute(
+      'SELECT user_id FROM users WHERE email = ? AND user_id != ?',
+      [email, userId]
+    );
+
+    if (existingUsers.length > 0) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Email already in use by another account' 
+      });
+    }
+
+    // Update user profile
+    const query = `
+      UPDATE users 
+      SET full_name = ?, email = ?, phone = ?
+      WHERE user_id = ?
+    `;
+
+    await db.execute(query, [full_name, email, phone, userId]);
+
+    res.json({ 
+      success: true, 
+      message: 'Profile updated successfully!' 
+    });
+
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error' 
+    });
+  }
+});
+
+
+
+
 // ========================================
 // Start Server
 // ========================================
-// app.listen(PORT, () => {
-//   console.log(`🚀 Server running on http://localhost:${PORT}`);
-//   console.log(`📁 Serving static files from 'public' folder`);
-// });
-
-const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`);
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`🔐 Authentication enabled with session management`);
+  console.log(`📁 Serving static files from 'public' folder`);
 });
