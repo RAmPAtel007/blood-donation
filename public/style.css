@@ -95,6 +95,58 @@ body {
 /* ========================================
    Buttons
    ======================================== */
+   /* Container for the buttons */
+.crud-actions {
+    display: flex;
+    gap: 10px;
+    margin-left: auto; /* Pushes buttons to the right */
+}
+
+/* Base Button Style */
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 8px; /* Smooth rounded corners */
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+/* Edit Button - Soft Blue/Gray (Non-destructive) */
+.btn-edit {
+    background-color: #f3f4f6;
+    color: #4b5563;
+}
+
+.btn-edit:hover {
+    background-color: #e5e7eb;
+    color: #1f2937;
+    transform: translateY(-1px);
+}
+
+/* Delete Button - Soft Red (Destructive/Theme) */
+.btn-delete {
+    background-color: #fef2f2; /* Very light red */
+    color: #dc2626; /* Deep red text */
+}
+
+.btn-delete:hover {
+    background-color: #dc2626; /* Solid red on hover */
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+}
+
+/* SVG Icon sizing */
+.btn-action svg {
+    width: 16px;
+    height: 16px;
+}
 .btn {
     display: inline-block;
     padding: 0.8rem 2rem;

@@ -719,11 +719,11 @@
                 
                 if (data.success) {
                     messageDiv.className = 'message success show';
-                    messageDiv.textContent = '✅ ' + data.message;
+                    messageDiv.textContent = '' + data.message;
                     setTimeout(() => window.location.href = 'dashboard.html', 1000);
                 } else {
                     messageDiv.className = 'message error show';
-                    messageDiv.textContent = '❌ ' + (data.message || 'Login failed');
+                    messageDiv.textContent = '' + (data.message || 'Login failed');
                     loginBtn.disabled = false;
                     loginBtn.textContent = originalText;
                 }
@@ -731,7 +731,7 @@
                 console.error('Error:', error);
                 const messageDiv = document.getElementById('message');
                 messageDiv.className = 'message error show';
-                messageDiv.textContent = '❌ Connection error. Please try again.';
+                messageDiv.textContent = 'Connection error. Please try again.';
                 loginBtn.disabled = false;
                 loginBtn.textContent = originalText;
             }

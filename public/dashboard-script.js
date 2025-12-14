@@ -108,16 +108,44 @@ async function loadDonors() {
     }
 }
 
+// function createDonorCard(donor) {
+//     return `
+//         <div class="crud-card">
+//             <div class="crud-header">
+//                 <span class="blood-badge">${donor.blood_group}</span>
+//                 <div class="crud-actions">
+//                     <button class="btn-icon btn-edit" onclick="editDonor(${donor.donor_id})" title="Edit">✏️</button>
+//                     <button class="btn-icon btn-delete" onclick="deleteDonor(${donor.donor_id})" title="Delete">🗑️</button>
+//                 </div>
+//             </div>
+//             <h3>${donor.name}</h3>
+//             <div class="crud-details">
+//                 <p><strong>Age:</strong> ${donor.age} years</p>
+//                 <p><strong>Gender:</strong> ${donor.gender}</p>
+//                 <p><strong>City:</strong> ${donor.city}</p>
+//                 <p><strong>Phone:</strong> ${donor.phone}</p>
+//                 <p class="created-date">Added: ${new Date(donor.created_at).toLocaleDateString()}</p>
+//             </div>
+//         </div>
+//     `;
+// }
 function createDonorCard(donor) {
     return `
         <div class="crud-card">
             <div class="crud-header">
                 <span class="blood-badge">${donor.blood_group}</span>
+                
                 <div class="crud-actions">
-                    <button class="btn-icon btn-edit" onclick="editDonor(${donor.donor_id})" title="Edit">✏️</button>
-                    <button class="btn-icon btn-delete" onclick="deleteDonor(${donor.donor_id})" title="Delete">🗑️</button>
+                    <button class="btn-action btn-edit" onclick="editDonor(${donor.donor_id})">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                        Edit
+                    </button>
+                    <button class="btn-action btn-delete" onclick="deleteDonor(${donor.donor_id})">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                        Delete
+                    </button>
                 </div>
-            </div>
+                </div>
             <h3>${donor.name}</h3>
             <div class="crud-details">
                 <p><strong>Age:</strong> ${donor.age} years</p>
@@ -309,18 +337,51 @@ async function loadRequests() {
     }
 }
 
+// function createRequestCard(request) {
+//     const statusClass = request.status.toLowerCase();
+//     return `
+//         <div class="crud-card">
+//             <div class="crud-header">
+//                 <span class="blood-badge">${request.blood_group}</span>
+//                 <span class="status-badge status-${statusClass}">${request.status}</span>
+//                 <div class="crud-actions">
+//                     <button class="btn-icon btn-edit" onclick="editRequest(${request.req_id})" title="Edit">✏️</button>
+//                     <button class="btn-icon btn-delete" onclick="deleteRequest(${request.req_id})" title="Delete">🗑️</button>
+//                 </div>
+//             </div>
+//             <h3>${request.name}</h3>
+//             <div class="crud-details">
+//                 <p><strong>City:</strong> ${request.city}</p>
+//                 <p><strong>Reason:</strong> ${request.reason}</p>
+//                 <p><strong>Phone:</strong> ${request.phone}</p>
+//                 <p class="created-date">Requested: ${new Date(request.created_at).toLocaleDateString()}</p>
+//             </div>
+//         </div>
+//     `;
+// }
+
+
 function createRequestCard(request) {
     const statusClass = request.status.toLowerCase();
     return `
         <div class="crud-card">
             <div class="crud-header">
-                <span class="blood-badge">${request.blood_group}</span>
-                <span class="status-badge status-${statusClass}">${request.status}</span>
-                <div class="crud-actions">
-                    <button class="btn-icon btn-edit" onclick="editRequest(${request.req_id})" title="Edit">✏️</button>
-                    <button class="btn-icon btn-delete" onclick="deleteRequest(${request.req_id})" title="Delete">🗑️</button>
+                <div style="display:flex; gap:8px;">
+                    <span class="blood-badge">${request.blood_group}</span>
+                    <span class="status-badge status-${statusClass}">${request.status}</span>
                 </div>
-            </div>
+
+                <div class="crud-actions">
+                    <button class="btn-action btn-edit" onclick="editRequest(${request.req_id})">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                        Edit
+                    </button>
+                    <button class="btn-action btn-delete" onclick="deleteRequest(${request.req_id})">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                        Delete
+                    </button>
+                </div>
+                </div>
             <h3>${request.name}</h3>
             <div class="crud-details">
                 <p><strong>City:</strong> ${request.city}</p>
