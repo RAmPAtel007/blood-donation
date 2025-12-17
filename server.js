@@ -1,196 +1,6 @@
-// // Main Express Server
-// // This file contains all REST API endpoints
-
-// const express = require('express');
-// const cors = require('cors');
-// const bodyParser = require('body-parser');
-// const db = require('./db'); // Import database connection
-
-// const app = express();
-// const PORT = 3000;
-
-// // Middleware Setup
-// app.use(cors());                          // Enable CORS for frontend requests
-// app.use(bodyParser.json());               // Parse JSON request bodies
-// app.use(bodyParser.urlencoded({ extended: true })); // Parse URL-encoded data
-// app.use(express.static('public'));        // Serve static files from public folder
-
-// // ========================================
-// // API ENDPOINT 1: Register New Donor
-// // POST /register-donor
-// // Purpose: Add new donor to database
-// // ========================================
-// app.post('/register-donor', async (req, res) => {
-//   try {
-//     // Extract donor details from request body
-//     const { name, age, gender, blood_group, city, phone } = req.body;
-
-//     // Validation: Check if all fields are provided
-//     if (!name || !age || !gender || !blood_group || !city || !phone) {
-//       return res.status(400).json({ 
-//         success: false, 
-//         message: 'All fields are required' 
-//       });
-//     }
-
-//     // SQL query to insert donor into database
-//     const query = `
-//       INSERT INTO donors (name, age, gender, blood_group, city, phone) 
-//       VALUES (?, ?, ?, ?, ?, ?)
-//     `;
-
-//     // Execute query with parameterized values (prevents SQL injection)
-//     const [result] = await db.execute(query, [name, age, gender, blood_group, city, phone]);
-
-//     // Send success response
-//     res.status(201).json({ 
-//       success: true, 
-//       message: 'Donor registered successfully!',
-//       donor_id: result.insertId 
-//     });
-
-//   } catch (error) {
-//     console.error('Error registering donor:', error);
-//     res.status(500).json({ 
-//       success: false, 
-//       message: 'Server error. Please try again.' 
-//     });
-//   }
-// });
-
-// // ========================================
-// // API ENDPOINT 2: Search Donors
-// // GET /search-donors
-// // Purpose: Find donors by blood group and city
-// // ========================================
-// app.get('/search-donors', async (req, res) => {
-//   try {
-//     // Get search parameters from query string
-//     const { blood_group, city } = req.query;
-
-//     // Build dynamic SQL query based on provided filters
-//     let query = 'SELECT * FROM donors WHERE 1=1';
-//     const params = [];
-
-//     // Add blood group filter if provided
-//     if (blood_group) {
-//       query += ' AND blood_group = ?';
-//       params.push(blood_group);
-//     }
-
-//     // Add city filter if provided
-//     if (city) {
-//       query += ' AND city LIKE ?';
-//       params.push(`%${city}%`); // Use LIKE for partial matching
-//     }
-
-//     // Execute search query
-//     const [donors] = await db.execute(query, params);
-
-//     // Send results
-//     res.status(200).json({ 
-//       success: true, 
-//       count: donors.length,
-//       donors: donors 
-//     });
-
-//   } catch (error) {
-//     console.error('Error searching donors:', error);
-//     res.status(500).json({ 
-//       success: false, 
-//       message: 'Server error. Please try again.' 
-//     });
-//   }
-// });
-
-// // ========================================
-// // API ENDPOINT 3: Request Blood
-// // POST /request-blood
-// // Purpose: Submit new blood request
-// // ========================================
-// app.post('/request-blood', async (req, res) => {
-//   try {
-//     // Extract request details from body
-//     const { name, blood_group, city, reason, phone } = req.body;
-
-//     // Validation
-//     if (!name || !blood_group || !city || !reason || !phone) {
-//       return res.status(400).json({ 
-//         success: false, 
-//         message: 'All fields are required' 
-//       });
-//     }
-
-//     // SQL query to insert blood request
-//     const query = `
-//       INSERT INTO blood_requests (name, blood_group, city, reason, phone) 
-//       VALUES (?, ?, ?, ?, ?)
-//     `;
-
-//     // Execute insertion
-//     const [result] = await db.execute(query, [name, blood_group, city, reason, phone]);
-
-//     // Send success response
-//     res.status(201).json({ 
-//       success: true, 
-//       message: 'Blood request submitted successfully!',
-//       request_id: result.insertId 
-//     });
-
-//   } catch (error) {
-//     console.error('Error submitting request:', error);
-//     res.status(500).json({ 
-//       success: false, 
-//       message: 'Server error. Please try again.' 
-//     });
-//   }
-// });
-
-// // ========================================
-// // API ENDPOINT 4: Get All Blood Requests
-// // GET /get-requests
-// // Purpose: Retrieve all blood requests
-// // ========================================
-// app.get('/get-requests', async (req, res) => {
-//   try {
-//     // Query to get all requests, ordered by most recent first
-//     const query = 'SELECT * FROM blood_requests ORDER BY req_id DESC';
-
-//     // Execute query
-//     const [requests] = await db.execute(query);
-
-//     // Send results
-//     res.status(200).json({ 
-//       success: true, 
-//       count: requests.length,
-//       requests: requests 
-//     });
-
-//   } catch (error) {
-//     console.error('Error fetching requests:', error);
-//     res.status(500).json({ 
-//       success: false, 
-//       message: 'Server error. Please try again.' 
-//     });
-//   }
-// });
-
-// // ========================================
-// // Start Server
-// // ========================================
-// // app.listen(PORT, () => {
-// //   console.log(`🚀 Server running on http://localhost:${PORT}`);
-// //   console.log(`📁 Serving static files from 'public' folder`);
-// // });
-
-// const PORT = process.env.PORT || 3000;
-// app.listen(PORT, () => {
-//   console.log(`✅ Server running on port ${PORT}`);
-// });
-
-
 // Main Express Server with Authentication & CRUD
 // This file contains user authentication and full CRUD operations
+require("dotenv").config();
 
 const express = require('express');
 const cors = require('cors');
@@ -220,8 +30,8 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: { 
-    secure: false, // Set to true if using HTTPS
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    secure: false,
+    maxAge: 24 * 60 * 60 * 1000
   }
 }));
 
@@ -242,7 +52,6 @@ const isAuthenticated = (req, res, next) => {
 // VALIDATION RULES
 // ========================================
 
-// User Registration Validation
 const userRegisterValidation = [
   body('username')
     .trim()
@@ -264,7 +73,6 @@ const userRegisterValidation = [
     .matches(/^[0-9]{10}$/).withMessage('Phone must be exactly 10 digits')
 ];
 
-// Donor Validation
 const donorValidation = [
   body('name')
     .trim()
@@ -284,7 +92,6 @@ const donorValidation = [
     .matches(/^[0-9]{10}$/).withMessage('Phone must be exactly 10 digits')
 ];
 
-// Blood Request Validation
 const requestValidation = [
   body('name')
     .trim()
@@ -306,45 +113,67 @@ const requestValidation = [
 // AUTHENTICATION ENDPOINTS
 // ========================================
 
-// User Registration
+// User Registration (WITH DEBUG LOGGING)
 app.post('/api/auth/register', userRegisterValidation, async (req, res) => {
   try {
+    console.log('\n========================================');
+    console.log('📝 REGISTRATION REQUEST RECEIVED');
+    console.log('========================================');
+    console.log('Request Body:', JSON.stringify(req.body, null, 2));
+    
     // Check validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('❌ Validation Failed:', JSON.stringify(errors.array(), null, 2));
       return res.status(400).json({ 
         success: false, 
         message: 'Validation failed',
         errors: errors.array() 
       });
     }
+    console.log('✅ Validation Passed');
 
     const { username, email, password, full_name, phone } = req.body;
 
     // Check if user already exists
+    console.log('🔍 Checking for existing users...');
     const [existingUsers] = await db.execute(
       'SELECT user_id FROM users WHERE email = ? OR username = ?',
       [email, username]
     );
 
     if (existingUsers.length > 0) {
+      console.log('❌ User already exists');
       return res.status(400).json({ 
         success: false, 
         message: 'Username or email already exists' 
       });
     }
+    console.log('✅ No existing user found');
 
     // Hash password
+    console.log('🔒 Hashing password...');
     const hashedPassword = await bcrypt.hash(password, 10);
+    console.log('✅ Password hashed successfully');
+    console.log('Hashed length:', hashedPassword.length);
 
     // Insert new user
+    console.log('💾 Inserting user into database...');
     const query = `
       INSERT INTO users (username, email, password, full_name, phone) 
       VALUES (?, ?, ?, ?, ?)
     `;
     
+    console.log('Query:', query);
+    console.log('Parameters:', [username, email, '[HIDDEN]', full_name, phone]);
+    
     const [result] = await db.execute(query, 
       [username, email, hashedPassword, full_name, phone]);
+
+    console.log('✅ USER INSERTED SUCCESSFULLY!');
+    console.log('New User ID:', result.insertId);
+    console.log('Affected Rows:', result.affectedRows);
+    console.log('========================================\n');
 
     res.status(201).json({ 
       success: true, 
@@ -353,10 +182,22 @@ app.post('/api/auth/register', userRegisterValidation, async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Registration error:', error);
+    console.error('\n========================================');
+    console.error('❌ REGISTRATION ERROR');
+    console.error('========================================');
+    console.error('Error Message:', error.message);
+    console.error('Error Code:', error.code);
+    console.error('Error SQL:', error.sql);
+    console.error('Full Error:', error);
+    console.error('========================================\n');
+    
     res.status(500).json({ 
       success: false, 
-      message: 'Registration failed. Please try again.' 
+      message: 'Registration failed. Please try again.',
+      debug: {
+        error: error.message,
+        code: error.code
+      }
     });
   }
 });
@@ -367,7 +208,8 @@ app.post('/api/auth/login', [
   body('password').notEmpty().withMessage('Password is required')
 ], async (req, res) => {
   try {
-    // Check validation errors
+    console.log('\n🔐 LOGIN ATTEMPT:', req.body.email);
+    
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ 
@@ -379,13 +221,13 @@ app.post('/api/auth/login', [
 
     const { email, password } = req.body;
 
-    // Find user
     const [users] = await db.execute(
       'SELECT user_id, username, email, password, full_name FROM users WHERE email = ?',
       [email]
     );
 
     if (users.length === 0) {
+      console.log('❌ User not found');
       return res.status(401).json({ 
         success: false, 
         message: 'Invalid email or password' 
@@ -394,26 +236,26 @@ app.post('/api/auth/login', [
 
     const user = users[0];
 
-    // Verify password
     const isValidPassword = await bcrypt.compare(password, user.password);
     
     if (!isValidPassword) {
+      console.log('❌ Invalid password');
       return res.status(401).json({ 
         success: false, 
         message: 'Invalid email or password' 
       });
     }
 
-    // Update last login
     await db.execute(
       'UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE user_id = ?',
       [user.user_id]
     );
 
-    // Create session
     req.session.userId = user.user_id;
     req.session.username = user.username;
     req.session.email = user.email;
+
+    console.log('✅ Login successful, User ID:', user.user_id);
 
     res.json({ 
       success: true, 
@@ -475,7 +317,6 @@ app.get('/api/auth/check', (req, res) => {
 // DONOR CRUD OPERATIONS (PROTECTED)
 // ========================================
 
-// CREATE - Register Donor (Protected)
 app.post('/api/donors', isAuthenticated, donorValidation, async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -513,7 +354,6 @@ app.post('/api/donors', isAuthenticated, donorValidation, async (req, res) => {
   }
 });
 
-// READ - Get All Donors by Current User (Protected)
 app.get('/api/donors/my', isAuthenticated, async (req, res) => {
   try {
     const userId = req.session.userId;
@@ -536,7 +376,6 @@ app.get('/api/donors/my', isAuthenticated, async (req, res) => {
   }
 });
 
-// READ - Get Single Donor (Protected)
 app.get('/api/donors/:id', isAuthenticated, async (req, res) => {
   try {
     const donorId = req.params.id;
@@ -566,7 +405,6 @@ app.get('/api/donors/:id', isAuthenticated, async (req, res) => {
   }
 });
 
-// UPDATE - Update Donor (Protected)
 app.put('/api/donors/:id', isAuthenticated, donorValidation, async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -582,7 +420,6 @@ app.put('/api/donors/:id', isAuthenticated, donorValidation, async (req, res) =>
     const userId = req.session.userId;
     const { name, age, gender, blood_group, city, phone } = req.body;
 
-    // Check if donor belongs to user
     const [existing] = await db.execute(
       'SELECT donor_id FROM donors WHERE donor_id = ? AND user_id = ?',
       [donorId, userId]
@@ -618,7 +455,6 @@ app.put('/api/donors/:id', isAuthenticated, donorValidation, async (req, res) =>
   }
 });
 
-// DELETE - Delete Donor (Protected)
 app.delete('/api/donors/:id', isAuthenticated, async (req, res) => {
   try {
     const donorId = req.params.id;
@@ -652,7 +488,6 @@ app.delete('/api/donors/:id', isAuthenticated, async (req, res) => {
 // BLOOD REQUEST CRUD OPERATIONS (PROTECTED)
 // ========================================
 
-// CREATE - Submit Blood Request (Protected)
 app.post('/api/requests', isAuthenticated, requestValidation, async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -690,7 +525,6 @@ app.post('/api/requests', isAuthenticated, requestValidation, async (req, res) =
   }
 });
 
-// READ - Get All Requests by Current User (Protected)
 app.get('/api/requests/my', isAuthenticated, async (req, res) => {
   try {
     const userId = req.session.userId;
@@ -713,7 +547,6 @@ app.get('/api/requests/my', isAuthenticated, async (req, res) => {
   }
 });
 
-// READ - Get Single Request (Protected)
 app.get('/api/requests/:id', isAuthenticated, async (req, res) => {
   try {
     const requestId = req.params.id;
@@ -743,7 +576,6 @@ app.get('/api/requests/:id', isAuthenticated, async (req, res) => {
   }
 });
 
-// UPDATE - Update Blood Request (Protected)
 app.put('/api/requests/:id', isAuthenticated, requestValidation, async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -759,7 +591,6 @@ app.put('/api/requests/:id', isAuthenticated, requestValidation, async (req, res
     const userId = req.session.userId;
     const { name, blood_group, city, reason, phone, status } = req.body;
 
-    // Check if request belongs to user
     const [existing] = await db.execute(
       'SELECT req_id FROM blood_requests WHERE req_id = ? AND user_id = ?',
       [requestId, userId]
@@ -795,7 +626,6 @@ app.put('/api/requests/:id', isAuthenticated, requestValidation, async (req, res
   }
 });
 
-// DELETE - Delete Blood Request (Protected)
 app.delete('/api/requests/:id', isAuthenticated, async (req, res) => {
   try {
     const requestId = req.params.id;
@@ -826,10 +656,9 @@ app.delete('/api/requests/:id', isAuthenticated, async (req, res) => {
 });
 
 // ========================================
-// PUBLIC ENDPOINTS (No Authentication Required)
+// PUBLIC ENDPOINTS
 // ========================================
 
-// Search Donors (Public - Read Only)
 app.get('/search-donors', async (req, res) => {
   try {
     const { blood_group, city } = req.query;
@@ -864,7 +693,6 @@ app.get('/search-donors', async (req, res) => {
   }
 });
 
-// Get All Public Requests (Public - Read Only)
 app.get('/get-requests', async (req, res) => {
   try {
     const query = 'SELECT * FROM blood_requests ORDER BY created_at DESC LIMIT 10';
@@ -885,17 +713,14 @@ app.get('/get-requests', async (req, res) => {
   }
 });
 
-
 // ========================================
-// USER PROFILE ENDPOINTS (ADD THESE)
+// USER PROFILE ENDPOINTS
 // ========================================
 
-// Get user profile
 app.get('/api/profile', isAuthenticated, async (req, res) => {
   try {
     const userId = req.session.userId;
 
-    // Get user details
     const [users] = await db.execute(
       'SELECT user_id, username, email, full_name, phone, created_at FROM users WHERE user_id = ?',
       [userId]
@@ -908,7 +733,6 @@ app.get('/api/profile', isAuthenticated, async (req, res) => {
       });
     }
 
-    // Get user stats
     const [donorCount] = await db.execute(
       'SELECT COUNT(*) as count FROM donors WHERE user_id = ?',
       [userId]
@@ -937,7 +761,6 @@ app.get('/api/profile', isAuthenticated, async (req, res) => {
   }
 });
 
-// Update user profile
 app.put('/api/profile', isAuthenticated, [
   body('full_name')
     .trim()
@@ -952,7 +775,6 @@ app.put('/api/profile', isAuthenticated, [
     .matches(/^[0-9]{10}$/).withMessage('Phone must be exactly 10 digits')
 ], async (req, res) => {
   try {
-    // Check validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ 
@@ -965,7 +787,6 @@ app.put('/api/profile', isAuthenticated, [
     const userId = req.session.userId;
     const { full_name, email, phone } = req.body;
 
-    // Check if email is already taken by another user
     const [existingUsers] = await db.execute(
       'SELECT user_id FROM users WHERE email = ? AND user_id != ?',
       [email, userId]
@@ -978,7 +799,6 @@ app.put('/api/profile', isAuthenticated, [
       });
     }
 
-    // Update user profile
     const query = `
       UPDATE users 
       SET full_name = ?, email = ?, phone = ?
@@ -1001,14 +821,13 @@ app.put('/api/profile', isAuthenticated, [
   }
 });
 
-
-
-
 // ========================================
 // Start Server
 // ========================================
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-  console.log(`🔐 Authentication enabled with session management`);
-  console.log(`📁 Serving static files from 'public' folder`);
+  console.log('\n========================================');
+  console.log('🚀 Server running on http://localhost:' + PORT);
+  console.log('🔐 Authentication enabled with session management');
+  console.log('📁 Serving static files from public folder');
+  console.log('========================================\n');
 });
