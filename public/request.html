@@ -84,7 +84,7 @@
     <footer class="footer">
         <p>&copy; 2024 Blood Donation Management System. All rights reserved.</p>
     </footer>
-
+    <script src="config.js"></script>
     <script>
         // Handle request form submission
         document.getElementById('requestForm').addEventListener('submit', async (e) => {
@@ -101,7 +101,7 @@
 
             try {
                 // Send POST request
-                const response = await fetch('http://localhost:3000/request-blood', {
+                const response = await fetch(`${API_CONFIG.BASE_URL}/request-blood`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -140,7 +140,7 @@
         // Load and display recent requests
         async function loadRequests() {
             try {
-                const response = await fetch('http://localhost:3000/get-requests');
+                const response = await fetch(`${API_CONFIG.BASE_URL}/request-blood`);
                 const data = await response.json();
 
                 const requestsList = document.getElementById('requestsList');

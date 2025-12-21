@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Account - Blood Donation System</title>
+    
     <style>
         * {
             margin: 0;
@@ -672,7 +673,7 @@
             </div>
         </div>
     </div>
-
+    <script src="config.js"></script>
     <script>
         const form = document.getElementById('registerForm');
         const usernameInput = document.getElementById('username');
@@ -939,7 +940,7 @@
             registerBtn.innerHTML = '<span class="loading"></span>Creating Account...';
 
             try {
-                const response = await fetch('http://localhost:3000/api/auth/register', {
+                const response = await fetch(API_CONFIG.ENDPOINTS.REGISTER, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(formData)

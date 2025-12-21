@@ -90,7 +90,7 @@
     <footer class="footer">
         <p>&copy; 2024 Blood Donation Management System. All rights reserved.</p>
     </footer>
-
+    <script src="config.js"></script>
     <script>
         // Handle form submission
         document.getElementById('registerForm').addEventListener('submit', async (e) => {
@@ -108,7 +108,7 @@
 
             try {
                 // Send POST request to backend
-                const response = await fetch('http://localhost:3000/register-donor', {
+                const response = await fetch(API_CONFIG.ENDPOINTS.LOGIN, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
