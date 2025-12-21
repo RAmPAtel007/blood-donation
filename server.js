@@ -11,13 +11,15 @@ const { body, validationResult } = require('express-validator');
 const db = require('./db');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // ========================================
 // Middleware Setup
 // ========================================
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: process.env.NODE_ENV === 'production' 
+    ? process.env.FRONTEND_URL 
+    : 'http://localhost:3000',
   credentials: true
 }));
 app.use(bodyParser.json());
@@ -26,12 +28,13 @@ app.use(express.static('public'));
 
 // Session Configuration
 app.use(session({
-  secret: 'blood-donation-secret-key-2024',
+  secret: process.env.SESSION_SECRET || 'blood-donation-secret-key-2024',
   resave: false,
   saveUninitialized: false,
   cookie: { 
-    secure: false,
-    maxAge: 24 * 60 * 60 * 1000
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 24 * 60 * 60 * 1000,
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
   }
 }));
 
